@@ -1,16 +1,38 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const CinemaSeatsSchema = new Schema({
-    accountId: {
+const CinemaMovieSchema = new Schema({
+    _id: {
         type: String,
-        required: [true, "Account Id is required"]
+        required: [true, "Movie Id is required"]
     },
     cinemaId: {
         type: String,
         required: [true, "Cinema Id is required"]
     },
-    movieId: {
+    title: {
+        type: String,
+        required: [true, "Title is required"]
+    },
+    price: {
+        type: Number,
+        required: [true, "Price is required"]
+    },
+    visibility: { default: false },
+    dateTime: {
+        start: {
+            type: String,
+            required: [true, "DateTime start is required"]
+        },
+        end: {
+            type: String,
+            required: [true, "DateTime end is required"]
+        }
+    }
+}, { _id: false });
+
+const CinemaSeatsSchema = new Schema({
+    _id: {
         type: String,
         required: [true, "Movie Id Id is required"]
     },
@@ -23,13 +45,13 @@ const CinemaSeatsSchema = new Schema({
         required: [true, "Cols is required"]
     },
     seats: []
-});
+}, { _id: false });
 
 
 const CinemaSchema = new Schema({
-    accountId: {
+    cinemaId: {
         type: String,
-        required: [true, "Account Id is required"]
+        required: [true, "Cinema Id is required"]
     },
     name: {
         type: String,
@@ -69,7 +91,10 @@ const CinemaSchema = new Schema({
 });
 
 
+
+
 module.exports = {
     Cinema: mongoose.model("cinemas", CinemaSchema),
+    CinemaMovies: mongoose.model("cinema-movies", CinemaMovieSchema),
     CinemaSeats: mongoose.model("cinema-seats", CinemaSeatsSchema)
 }

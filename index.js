@@ -22,7 +22,6 @@ try {
   app.use(multer({ storage, fileFilter }).array("images"));
 
   app.use("/api", require("./controllers/userController"));
-  app.use("/api", require("./controllers/movieController"));
   app.use("/api", require("./controllers/cinemaController"));
 
 

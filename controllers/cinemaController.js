@@ -1,24 +1,16 @@
 const express = require("express");
+const { v4: uuidV4 } = require("uuid");
 const { validationResult } = require("express-validator");
 const { cinemaValidator, getCinemasValidator, cinemaSeatsValidator, getCinemasSeatsValidator } = require("../const/route_validators");
 const router = express.Router();
-const { Cinema, CinemaSeats } = require("../models/cinema");
+const { Cinema, CinemaSeats, CinemaMovies } = require("../models/cinema");
 const { distanceBetween } = require("../utils/distanceBetween");
 
-/*
-    TODO: 
-        done Create Cinema
-        done Get all Cinemas
-        done Edit Cinema name
-        done Delete Cinema
-    FIXME: 
-        
-*/
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
     'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
 
-
+// #region  
 router.post("/cinema", cinemaValidator, async (req, res) => {
     try {
 
@@ -88,6 +80,14 @@ router.get("/cinema", getCinemasValidator, (req, res) => {
     }
 });
 
+router.get("/cinema/:id", async (req, res) => {
+    const cinemaId = req.params.id;
+    return Cinema.find({ cinemaId })
+        .select({ __v: 0 })
+        .then((value) => res.status(200).json(value))
+        .catch((err) => res.status(400).json(err));
+})
+
 router.put("/cinema", (req, res) => {
     try {
         const { _id, name, dateTime } = req.body;
@@ -118,7 +118,11 @@ router.delete("/cinema/:id", (req, res) => {
     }
 })
 
-router.post("/cinema/seats", cinemaSeatsValidator, async (req, res) => {
+// #endregion 
+
+
+// #region 
+router.post("/cinema/movie", async (req, res) => {
     try {
 
         const errors = validationResult(req);
@@ -126,15 +130,13 @@ router.post("/cinema/seats", cinemaSeatsValidator, async (req, res) => {
             .status(400)
             .json(errors.array());
 
-
-        const { rows, cols, accountId, cinemaId } = req.body;
-
-        // Delete if existed
-        const cinema = await Cinema.findOne({ accountId });
-        if (cinema) await Cinema.findOneAndDelete({ accountId });
-
+        const { cinemaId } = req.body;
+        const { rows, cols } = req.body.movie.seatCount;
+        const generatedMovieId = uuidV4();
 
         let seats = [];
+
+
         for (let row = 1; row < rows + 1; row++) {
             for (let col = 1; col < cols + 1; col++) {
                 seats.push({
@@ -144,10 +146,43 @@ router.post("/cinema/seats", cinemaSeatsValidator, async (req, res) => {
                 });
             }
         }
-        const body = { seats, ...req.body }
-        return new CinemaSeats(body)
-            .save()
-            .then((value) => res.status(200).json(value))
+
+        // Create Cinema movie and Movie seats
+        const movie = await new CinemaMovies({
+            _id: generatedMovieId,
+            cinemaId,
+            ...req.body.movie
+        }).save();
+
+        const movieSeats = await new CinemaSeats({
+            _id: generatedMovieId,
+            rows,
+            cols,
+            seats
+        }).save();
+
+        return res.status(200).json({ movie, movieSeats });
+
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+// GET ALL CINEMA MOVIES BY CINEMA ID
+router.get("/cinema/movie/:cinemaId", async (req, res) => {
+    try {
+        const cinemaId = req.params.cinemaId;
+        return CinemaMovies.find({ cinemaId })
+            .select({ __v: 0 })
+            .then(async (value) => {
+                let resultArray = [];
+                for (el of value) {
+                    const seats = await CinemaSeats.findOne({ _id: el._id }).select({ __v: 0 });
+                    console.log(seats)
+                    resultArray.push({ movie: el, seats });
+                }
+                return res.status(200).json(resultArray);
+            })
             .catch((err) => res.status(400).json(err));
 
     } catch (error) {
@@ -155,26 +190,50 @@ router.post("/cinema/seats", cinemaSeatsValidator, async (req, res) => {
     }
 });
 
-router.get("/cinema/seats", getCinemasSeatsValidator, async (req, res) => {
+// GET ONE CINEMA MOVIE BY ID
+router.get("/cinema/movie/s/:movieId", async (req, res) => {
+    try {
+        const _id = req.params.movieId;
+        const movie = await CinemaMovies.findById(_id).select({ __v: 0 });
+        const seats = await CinemaSeats.findById(_id).select({ __v: 0 });
+
+        return res.status(200).json({ movie, seats });
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+router.put("/cinema/movie/seat/fill", async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) return res
             .status(400)
             .json(errors.array());
 
-        const { accountId, cinemaId, movieId } = req.query;
+        const { _id, seat, occupied, customer } = req.body;
+        const update = {
+            $set: {
+                'seats.$[element].occupied': occupied,
+                'seats.$[element].customer': customer
+            },
+        };
+        const options = {
+            new: true,
+            "arrayFilters": [
+                { "element.seat": seat }
+            ]
+        }
 
-        return CinemaSeats.find({ accountId, cinemaId, movieId })
-            .then((value) => res.status(200).json(value))
+        CinemaSeats.findOneAndUpdate({ _id }, update, options)
+            .then((value) => {
+                if (!value) return res.status(400).json({ message: "Update failed" });
+                return res.status(200).json(value);
+            })
             .catch((err) => res.status(400).json(err));
-
     } catch (error) {
         console.error(error);
     }
-});
-
-// TODO: Fill seats
-router.put("/cinema/seats/fill", async (req, res) => {
-
 })
+// #endregion 
+
 module.exports = router;

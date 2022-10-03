@@ -6,7 +6,7 @@ const userValidator = [
     check('password', 'Password is required').notEmpty(),
 ];
 const cinemaValidator = [
-    check('accountId', 'Account Id required').notEmpty(),
+    check('cinemaId', 'Cinema Id required').notEmpty(),
     check('name', 'Name is required').notEmpty(),
     check('address.name', 'Address name is required').notEmpty(),
     check('address.coordinates.latitude', 'Address latitude is required').notEmpty(),
@@ -16,6 +16,7 @@ const cinemaValidator = [
 ];
 const cinemaSeatsValidator = [
     check('accountId', 'Account Id required').notEmpty(),
+    check('movieId', 'Movie Id required').notEmpty(),
     check('rows', 'Row count is required').notEmpty(),
     check('cols', 'Column count is required').notEmpty(),
 ];
@@ -26,9 +27,9 @@ const getCinemasValidator = [
 ];
 
 const getCinemasSeatsValidator = [
-    query('cinemaId', 'Cinema Id required').notEmpty(),
     query('movieId', 'Movie Id is required').notEmpty(),
-    query('accountId', 'Account Id is required').notEmpty(),
+    //query('cinemaId', 'Cinema Id required').notEmpty(),
+    // query('accountId', 'Account Id is required').notEmpty(),
 ];
 
 
