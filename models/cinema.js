@@ -10,9 +10,17 @@ const CinemaMovieSchema = new Schema({
         type: String,
         required: [true, "Cinema Id is required"]
     },
+    cinemaName: {
+        type: String,
+        required: [true, "cinemaName is required"]
+    },
     poster: {
         type: String,
         required: [true, "poster is required"]
+    },
+    summary: {
+        type: String,
+        required: [true, "summary is required"]
     },
     title: {
         type: String,
