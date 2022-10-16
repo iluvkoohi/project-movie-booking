@@ -25,11 +25,11 @@ const CinemaMovieSchema = new Schema({
     visibility: { default: false },
     dateTime: {
         start: {
-            type: String,
+            type: Number,
             required: [true, "DateTime start is required"]
         },
         end: {
-            type: String,
+            type: Number,
             required: [true, "DateTime end is required"]
         },
         schedule: {
