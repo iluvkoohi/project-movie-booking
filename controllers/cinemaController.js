@@ -1,8 +1,8 @@
 const express = require("express");
+const router = express.Router();
 const { v4: uuidV4 } = require("uuid");
 const { validationResult } = require("express-validator");
 const { cinemaValidator, getCinemasValidator, cinemaSeatsValidator, getCinemasSeatsValidator } = require("../const/route_validators");
-const router = express.Router();
 const { Cinema, CinemaSeats, CinemaMovies } = require("../models/cinema");
 const { distanceBetween } = require("../utils/distanceBetween");
 
@@ -24,12 +24,14 @@ router.post("/cinema", cinemaValidator, async (req, res) => {
             .status(400)
             .json({ message: "Cinema name already exist, please try a new one." });
 
-        const open = new Date(req.body.dateTime.open);
-        const close = new Date(req.body.dateTime.close);
+        // const open = new Date(req.body.dateTime.open);
+        // const close = new Date(req.body.dateTime.close);
 
-        req.body.dateTime.open = parseInt(open.getHours() + "" + open.getMinutes());
-        req.body.dateTime.close = parseInt(close.getHours() + "" + close.getMinutes());
+        // req.body.dateTime.open = parseInt(open.getHours() + "" + open.getMinutes());
+        // req.body.dateTime.close = parseInt(close.getHours() + "" + close.getMinutes());
 
+        // req.body.dateTime.open = parseInt(open.getHours() + "" + open.getMinutes());
+        // req.body.dateTime.close = parseInt(close.getHours() + "" + close.getMinutes());
         return new Cinema(req.body)
             .save()
             .then((value) => res.status(200).json(value))
