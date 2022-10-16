@@ -31,7 +31,12 @@ const CinemaMovieSchema = new Schema({
         end: {
             type: String,
             required: [true, "DateTime end is required"]
-        }
+        },
+        schedule: {
+            type: Date,
+            required: [true, "DateTime schedule is required"]
+        },
+
     }
 }, { _id: false });
 

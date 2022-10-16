@@ -20,10 +20,6 @@ const PaymentSchema = new Schema({
         type: Map,
         required: [true, "customer  is required"]
     },
-    amount: {
-        type: Number,
-        required: [true, "amount is required"]
-    },
     createdAt: {
         type: Date,
         default: Date.now,

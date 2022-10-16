@@ -26,6 +26,7 @@ router.get("/payment/customer/:id", (req, res) => {
         .catch((err) => res.status(400).json(err));
 });
 
+
 router.get("/payments", (req, res) => {
     const accountId = req.params.id;
     return Payment.find({})
