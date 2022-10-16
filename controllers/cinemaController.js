@@ -120,7 +120,6 @@ router.delete("/cinema/:id", (req, res) => {
 
 // #endregion 
 
-
 // #region 
 router.post("/cinema/movie", async (req, res) => {
     try {
