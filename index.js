@@ -21,8 +21,10 @@ try {
   app.use(express.urlencoded({ extended: true }));
   app.use(multer({ storage, fileFilter }).array("images"));
 
+  app.use("/api", require("./controllers/uploadController"));
   app.use("/api", require("./controllers/userController"));
   app.use("/api", require("./controllers/cinemaController"));
+  app.use("/api", require("./controllers/paymentController"));
 
 
   app.listen(port, () => console.log(`SERVER IS RUNNING ON ${port}`));
