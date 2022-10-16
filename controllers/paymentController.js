@@ -12,13 +12,13 @@ router.post("/payment", (req, res) => {
 
 router.get("/payment/cinema/:id", (req, res) => {
     const cinemaId = req.params.id;
-    return Payment.find({ 'cinemaId.cinemaId': cinemaId })
+    return Payment.find({ 'cinema.cinemaId': cinemaId })
         .select({ __v: 0 })
         .then((value) => res.status(200).json(value))
         .catch((err) => res.status(400).json(err));
 });
 
-router.get("/payment/me/:id", (req, res) => {
+router.get("/payment/customer/:id", (req, res) => {
     const accountId = req.params.id;
     return Payment.find({ 'customer.accountId': accountId })
         .select({ __v: 0 })
