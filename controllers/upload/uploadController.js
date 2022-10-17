@@ -6,7 +6,7 @@ const uploadImages = async (req, res) => {
         const urls = [];
         const files = req.files;
         const cloudOptions = {
-            folder: "Public/user/uploads",
+            folder: "Public/user/uploads/Movie Booking",
             unique_filename: true,
         };
 

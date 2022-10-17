@@ -204,6 +204,7 @@ router.get("/cinema/movie/s/:movieId", async (req, res) => {
     }
 });
 
+// UPDATE CINEMA SEAT
 router.put("/cinema/movie/seat/fill", async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -231,6 +232,18 @@ router.put("/cinema/movie/seat/fill", async (req, res) => {
                 return res.status(200).json(value);
             })
             .catch((err) => res.status(400).json(err));
+    } catch (error) {
+        console.error(error);
+    }
+})
+
+// DELETE CINEMA MOVIE
+router.delete("/cinema/movie/:movieId", async (req, res) => {
+    try {
+        const _id = req.params.movieId;
+        const movie = await CinemaMovies.findByIdAndDelete(_id).select({ __v: 0 });
+        const seats = await CinemaSeats.findByIdAndDelete(_id).select({ __v: 0 });
+        return res.status(200).json({ movie, seats });
     } catch (error) {
         console.error(error);
     }
