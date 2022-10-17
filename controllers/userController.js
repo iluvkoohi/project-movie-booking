@@ -5,9 +5,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { throwError } = require("../const/status");
 const { validationResult } = require('express-validator');
+const { userValidator } = require("../const/route_validators");
 
 const User = require("../models/user");
-const { userValidator } = require("../const/route_validators");
 const SALT_ROUNDS = 12;
 const MAX_AGE = 2 * 60 * 60 * 1000;
 
@@ -47,9 +47,7 @@ router.post("/user/register", userValidator, async (req, res) => {
                             });
 
                     })
-                    .catch((err) => res
-                        .status(400)
-                        .json({ message: "account already exist" }));
+                    .catch((err) => res.status(400).json(err));
             });
     } catch (error) {
         console.log(error);
@@ -96,6 +94,43 @@ router.post("/user/login", userValidator, async (req, res) => {
     }
 });
 
+router.get("/user/:accountId", (req, res) => {
+    const accountId = req.params.accountId;
+    return User.findOne({ accountId })
+        .then((value) => {
+            if (!value) return res.status(400).json({ message: "Profile not found" })
+            return res.status(200).json(value);
+        })
+        .catch((err) => res.status(400).json(err));
+});
+
+router.get("/user", (req, res) => {
+    return User.find({})
+        .then((value) => res.status(200).json(value))
+        .catch((err) => res.status(400).json(err));
+});
+
+
+router.put("/user", async (req, res) => {
+    const { accountId, businessPermit, verified } = req.body;
+
+    return User.findOneAndUpdate(
+        { accountId },
+        {
+            $set: {
+                businessPermit,
+                verified,
+                "date.updatedAt": Date.now(),
+            },
+        },
+        { new: true })
+        .then((value) => {
+            if (!value) return res.status(400).json(err)
+            return res.status(200).json(value);
+        })
+        .catch((err) => res.status(400).json(err));
+
+})
 const changePassword = async (req, res) => {
     try {
 
