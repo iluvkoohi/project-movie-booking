@@ -33,7 +33,29 @@ router.post("/upload", async (req, res) => {
     } catch (error) {
         console.log(error)
     }
-})
+});
+
+
+router.post("/upload/video", async (req, res) => {
+    try {
+        const filePath = req.files[0].path;
+        const cloudOptions = {
+            folder: "Public/user/uploads/Movie Booking/Videos",
+            public_id: `${Date.now()}`,
+            resource_type: "auto",
+            chunk_size: 6000000,
+            eager: [
+                { width: 300, height: 300, crop: "pad", audio_codec: "none" },
+                { width: 160, height: 100, crop: "crop", gravity: "south", audio_codec: "none" }
+            ],
+            eager_async: true,
+        };
+        const video = await cloudinary.uploader.upload(filePath, cloudOptions);
+        return res.status(200).json(video.url);
+    } catch (error) {
+        console.log(error)
+    }
+});
 
 module.exports = router;
 
