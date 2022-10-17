@@ -13,7 +13,7 @@ const MAX_AGE = 2 * 60 * 60 * 1000;
 
 router.post("/user/register", userValidator, async (req, res) => {
     try {
-
+        const profile = req.body.account.profile;
         const errors = validationResult(req);
         if (!errors.isEmpty()) return res
             .status(400)
@@ -28,7 +28,7 @@ router.post("/user/register", userValidator, async (req, res) => {
 
         await bcrypt.hash(password, SALT_ROUNDS)
             .then(async (hashValue) => {
-                new User({ email, hashValue })
+                new User({ email, hashValue, account: { profile } })
                     .save()
                     .then((value) => {
                         const token = jwt.sign(
@@ -36,15 +36,9 @@ router.post("/user/register", userValidator, async (req, res) => {
                             process.env.ACCESS_TOKEN_SECRET,
                             { expiresIn: "1h" }
                         );
-                        const cookieOptions = { httpOnly: true, maxAge: MAX_AGE };
-                        return res.status(200)
-                            //.cookie('token', token, cookieOptions)
-                            .json({
-                                accountId: value._id,
-                                email,
-                                password: hashValue,
-                                token
-                            });
+                        // const cookieOptions = { httpOnly: true, maxAge: MAX_AGE };
+                        //.cookie('token', token, cookieOptions)
+                        return res.status(200).json({ user: value, token });
 
                     })
                     .catch((err) => res.status(400).json(err));
@@ -78,15 +72,9 @@ router.post("/user/login", userValidator, async (req, res) => {
                 { expiresIn: "1h" }
             );
 
-            const cookieOptions = { httpOnly: true, maxAge: MAX_AGE };
-            return res.status(200)
-                // .cookie('token', token, cookieOptions)
-                .json({
-                    "accountId": user._id,
-                    "email": user.email,
-                    "password": user.hashValue,
-                    token
-                });
+            // const cookieOptions = { httpOnly: true, maxAge: MAX_AGE };
+            // .cookie('token', token, cookieOptions)
+            return res.status(200).json({ user, token });
         })
 
     } catch (error) {
@@ -111,19 +99,36 @@ router.get("/user", (req, res) => {
 });
 
 
-router.put("/user", async (req, res) => {
-    const { accountId, businessPermit, verified } = req.body;
+router.put("/user/permit", async (req, res) => {
+    const { _id, permitUrl } = req.body;
 
-    return User.findOneAndUpdate(
-        { accountId },
+    return User.findByIdAndUpdate(_id,
         {
             $set: {
-                businessPermit,
-                verified,
+                'account.permitUrl': permitUrl,
                 "date.updatedAt": Date.now(),
             },
         },
-        { new: true })
+        { new: true, upsert: true })
+        .then((value) => {
+            if (!value) return res.status(400).json(err)
+            return res.status(200).json(value);
+        })
+        .catch((err) => res.status(400).json(err));
+
+});
+
+router.put("/user/verify", async (req, res) => {
+    const { _id, verified } = req.body;
+
+    return User.findByIdAndUpdate(_id,
+        {
+            $set: {
+                'account.verified': verified,
+                "date.updatedAt": Date.now(),
+            },
+        },
+        { new: true, upsert: true })
         .then((value) => {
             if (!value) return res.status(400).json(err)
             return res.status(200).json(value);
