@@ -98,7 +98,7 @@ router.get("/user", async (req, res) => {
         .catch((err) => res.status(400).json(err));
 });
 
-router.get("/user/business-permits", async (req, res) => {
+router.get("/user/all/business-permits", async (req, res) => {
     return User.find({ 'account.permitUrl': { $ne: null } })
         .then((value) => res.status(200).json(value))
         .catch((err) => res.status(400).json(err));
