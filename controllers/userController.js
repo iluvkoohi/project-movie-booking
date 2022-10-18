@@ -13,7 +13,7 @@ const MAX_AGE = 2 * 60 * 60 * 1000;
 
 router.post("/user/register", userValidator, async (req, res) => {
     try {
-        const profile = req.body.account.profile;
+        const account = req.body.account;
         const errors = validationResult(req);
         if (!errors.isEmpty()) return res
             .status(400)
@@ -28,7 +28,7 @@ router.post("/user/register", userValidator, async (req, res) => {
 
         await bcrypt.hash(password, SALT_ROUNDS)
             .then(async (hashValue) => {
-                new User({ email, hashValue, account: { profile } })
+                new User({ email, hashValue, account })
                     .save()
                     .then((value) => {
                         const token = jwt.sign(
@@ -92,11 +92,17 @@ router.get("/user/:accountId", (req, res) => {
         .catch((err) => res.status(400).json(err));
 });
 
-router.get("/user", (req, res) => {
+router.get("/user", async (req, res) => {
     return User.find({})
         .then((value) => res.status(200).json(value))
         .catch((err) => res.status(400).json(err));
 });
+
+router.get("/user/business-permits", async (req, res) => {
+    return User.find({ 'account.permitUrl': { $ne: null } })
+        .then((value) => res.status(200).json(value))
+        .catch((err) => res.status(400).json(err));
+})
 
 
 router.put("/user/permit", async (req, res) => {
@@ -135,7 +141,8 @@ router.put("/user/verify", async (req, res) => {
         })
         .catch((err) => res.status(400).json(err));
 
-})
+});
+
 const changePassword = async (req, res) => {
     try {
 
